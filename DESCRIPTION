@@ -2,11 +2,31 @@ Package: thrive
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+    c(person(given = "Kai", 
+             family = "Aragaki", 
+             role = c("aut", "cre"),
+             email = "adamaragaki@gmail.com", 
+             comment = c(ORCID = "0000-0002-9458-0426")),
+      person(given = "Alboukadel", 
+             family = "Kassambara", 
+             role = c("aut"), 
+             email = "alboukadel.kassambara@gmail.com"),
+      person(given = "Marcin",
+             family = "Kosinski", 
+             role = c("aut"), 
+             email = "m.p.kosinski@@gmail.com"),
+      person(given = "Przemyslaw", 
+             family = "Biecek", 
+             role = c("aut"), 
+             email = "przemyslaw.biecek@gmail.com"),
+      person(given = "Scheipl", 
+             family = "Fabian", 
+             role = c("ctb"), 
+             email = "fabian.scheipl@gmail.com"))
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
+Language: en
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
