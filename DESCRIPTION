@@ -30,3 +30,36 @@ Language: en
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
+Collate: 
+    'add_ggsurvplot.R'
+    'utilities.R'
+    'surv_summary.R'
+    'ggsurvtable.R'
+    'surv_pvalue.R'
+    'ggsurvplot_df.R'
+    'ggsurvplot_core.R'
+    'ggsurvplot_add_all.R'
+    'ggsurvplot_list.R'
+    'ggsurvplot_group_by.R'
+    'ggsurvplot.R'
+    'arrange_ggsurvplots.R'
+    'ggadjustedcurves.R'
+    'ggcompetingrisks.R'
+    'ggcoxdiagnostics.R'
+    'ggcoxfunctional.R'
+    'ggcoxzph.R'
+    'ggflexsurvplot.R'
+    'ggforest.R'
+    'ggsurvevents.R'
+    'ggsurvplot_combine.R'
+    'ggsurvplot_facet.R'
+    'ggsurvtheme.R'
+    'ggurvplot_arguments.R'
+    'pairwise_survdiff.R'
+    'surv_cutpoint.R'
+    'surv_group_by.R'
+    'surv_fit.R'
+    'surv_median.R'
+    'surveil.R'
+Imports: 
+    rlang
