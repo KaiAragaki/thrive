@@ -126,9 +126,7 @@ ggsurvplot_core <- function(fit, data = NULL, fun = NULL,
   }
 
 
-  # Drawing a horizontal line at 50% survival
-  #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  #if(surv.scale == "percent") fun <- "pct"
+  # Drawing a horizontal line at 50% survival ----------------------------------
   if(surv.median.line %in% c("hv", "h", "v"))
     p <- .add_surv_median(p, fit, type = surv.median.line, fun = fun, data = data)
 
