@@ -1,4 +1,4 @@
-#' @include utilities.R surv_summary.R ggsurvplot_df.R surv_pvalue.R ggsurvtable.R
+#' @include utilities.R ggsurvplot_df.R surv_pvalue.R ggsurvtable.R
 #
 # Core function to plot survival curves using ggplot2.
 # Accepts only one survfit object. Internally called by the other \code{ggsurvplot_*()} family functions.
@@ -40,8 +40,6 @@ ggsurvplot_core <- function(fit, data = NULL, fun = NULL,
                             ...
 ){
 
-  if(!inherits(fit, "survfit"))
-    stop("Can't handle an object of class ", class(fit))
   surv.median.line <- match.arg(surv.median.line)
   stopifnot(log.rank.weights %in% c("survdiff", "1", "n", "sqrtN", "S1", "S2","FH_p=1_q=1"))
   log.rank.weights <- match.arg(log.rank.weights)
@@ -79,11 +77,11 @@ ggsurvplot_core <- function(fit, data = NULL, fun = NULL,
   # data used to compute survfit
   data <- .get_data(fit, data = data, complain = FALSE)
   # Data for survival plot
-  d <- surv_summary(fit, data = data)
-  if(!is.null(fit$start.time)) d <- subset(d, d$time >= fit$start.time )
+  d <- broom::tidy(fit)
+  if(!is.null(fit$start.time)) d <- subset(d, d$time >= fit$start.time)
 
   # Axis limits
-   xmin <- ifelse(.is_cloglog(fun), min(c(1, d$time)), 0)
+   xmin <- ifelse(fun == "cloglog", min(c(1, d$time)), 0)
    if(!is.null(fit$start.time)) xmin <- fit$start.time
    xmax <- .get_default_breaks(d$time, .log = .is_cloglog(fun)) %>% max()
    if(is.null(xlim)) xlim <- c(xmin, xmax)
@@ -126,9 +124,7 @@ ggsurvplot_core <- function(fit, data = NULL, fun = NULL,
   }
 
 
-  # Drawing a horizontal line at 50% survival
-  #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  #if(surv.scale == "percent") fun <- "pct"
+  # Drawing a horizontal line at 50% survival ----------------------------------
   if(surv.median.line %in% c("hv", "h", "v"))
     p <- .add_surv_median(p, fit, type = surv.median.line, fun = fun, data = data)
 
@@ -475,14 +471,3 @@ ggsurvplot_core <- function(fit, data = NULL, fun = NULL,
   ggsurv$table <- NULL
   ggsurv
 }
-
-# Check if fun is cloglog
-.is_cloglog <- function(fun){
-  res <- FALSE
-  if(is.character(fun)){
-    res <- fun == "cloglog"
-  }
-  res
-}
-
-

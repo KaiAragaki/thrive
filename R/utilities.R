@@ -11,7 +11,6 @@
 #' @importFrom survMisc ten comp
 #' @importFrom utils capture.output
 
-
 # Count the number of ggplots in a list
 .count_ggplots <- function(list.objects){
   nplot <- 0

@@ -2,9 +2,15 @@
 % Please edit documentation in R/surveil.R
 \name{as_thrive}
 \alias{as_thrive}
-\title{Title}
+\alias{as_thrive.survfit}
+\alias{as_thrive.numeric}
+\title{Coerce a fit to a thrive object}
 \usage{
 as_thrive(x, ...)
+
+\method{as_thrive}{survfit}(x, ...)
+
+\method{as_thrive}{numeric}(x, ...)
 }
 \arguments{
 \item{...}{}
@@ -13,5 +19,5 @@ as_thrive(x, ...)
 
 }
 \description{
-Title
+Coerce a fit to a thrive object
 }

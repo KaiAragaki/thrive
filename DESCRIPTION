@@ -32,8 +32,8 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Collate: 
     'add_ggsurvplot.R'
-    'utilities.R'
     'surv_summary.R'
+    'utilities.R'
     'ggsurvtable.R'
     'surv_pvalue.R'
     'ggsurvplot_df.R'
@@ -43,6 +43,7 @@ Collate:
     'ggsurvplot_group_by.R'
     'ggsurvplot.R'
     'arrange_ggsurvplots.R'
+    'extract-strata.R'
     'ggadjustedcurves.R'
     'ggcompetingrisks.R'
     'ggcoxdiagnostics.R'

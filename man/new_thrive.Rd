@@ -2,16 +2,16 @@
 % Please edit documentation in R/surveil.R
 \name{new_thrive}
 \alias{new_thrive}
-\title{Title}
+\title{Construct a new thrive object}
 \usage{
-new_thrive(fit = numeric())
+new_thrive(x = data.frame())
 }
 \arguments{
-\item{fit}{}
+\item{x}{a dataframe}
 }
 \value{
 
 }
 \description{
-Title
+Construct a new thrive object
 }
