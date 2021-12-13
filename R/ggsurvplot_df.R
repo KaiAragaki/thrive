@@ -112,12 +112,6 @@ ggsurvplot_df <- function(fit, fun = NULL,
   else if(color %in% colnames(df)){
     .strata.var <- color
   }
-  else {
-   warning("Now, to change color palette, use the argument palette= '", color, "' ",
-            "instead of color = '", color, "'", call. = FALSE)
-    palette <- color
-    .strata.var <- "strata"
-  }
 
   # Number of strata and strata names
   #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
