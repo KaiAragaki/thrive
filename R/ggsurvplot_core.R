@@ -79,8 +79,8 @@ ggsurvplot_core <- function(fit, data = NULL, fun = NULL,
   # data used to compute survfit
   data <- .get_data(fit, data = data, complain = FALSE)
   # Data for survival plot
-  d <- surv_summary(fit, data = data)
-  if(!is.null(fit$start.time)) d <- subset(d, d$time >= fit$start.time )
+  d <- broom::tidy(fit)
+  if(!is.null(fit$start.time)) d <- subset(d, d$time >= fit$start.time)
 
   # Axis limits
    xmin <- ifelse(.is_cloglog(fun), min(c(1, d$time)), 0)
