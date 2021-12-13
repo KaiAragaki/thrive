@@ -79,6 +79,7 @@ ggsurvplot_df <- function(fit, fun = NULL,
                           ggtheme = theme_survminer(),
                           ...)
 {
+
   df <- fit
 
   size <- ifelse(is.null(list(...)$size), 1, list(...)$size)
@@ -97,31 +98,26 @@ ggsurvplot_df <- function(fit, fun = NULL,
   #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   # one group
   if(is.null(df$strata)){
-    df$strata <- as.factor(rep("All", nrow(df)))
+    df$strata <- as.factor("All")
     if(missing(conf.int)){
-      conf.int = TRUE
-      conf.int.fill = "strata"
+      conf.int <- TRUE
+      conf.int.fill <- "strata"
     }
   }
 
 
-  # Coloring variable
-  #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  # Coloring variable ----------------------------------------------------------
   if(is.null(color))
     color <- .strata.var <- "strata"
   else if(color %in% colnames(df)){
     .strata.var <- color
   }
-  else {
-   warning("Now, to change color palette, use the argument palette= '", color, "' ",
-            "instead of color = '", color, "'", call. = FALSE)
-    palette <- color
-    .strata.var <- "strata"
-  }
+  #KA: Seems unwise. Remove?
 
   # Number of strata and strata names
   #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   .strata <- df[, .strata.var]
+  #KA: Looks like it requires the strata tidying function. Maybe there's a workarround.
   strata_names <- .levels(.strata)
   n.strata <- length(strata_names)
 
