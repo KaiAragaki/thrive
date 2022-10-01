@@ -15,7 +15,10 @@ validate_thrive <- function(thrive) {
                         "std.error", "conf.high", "conf.low")
 
   if (!all(rlang::has_name(thrive, thrive_obj_names))) {
-    missing_names <- setdiff(thrive_obj_names, rlang::names2(thrive)) |> paste(collapse = ", ")
+    missing_names <-
+      setdiff(thrive_obj_names, rlang::names2(thrive)) |>
+      paste(collapse = ", ")
+
     warning("The following columns were expected but not found: ", missing_names)
   }
 

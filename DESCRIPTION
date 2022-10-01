@@ -63,4 +63,5 @@ Collate:
     'surv_median.R'
     'surveil.R'
 Imports: 
+    R7,
     rlang
