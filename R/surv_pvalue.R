@@ -84,8 +84,7 @@ NULL
 #'@rdname surv_pvalue
 surv_pvalue <- function(fit, data = NULL, method = "survdiff", test.for.trend = FALSE, combine = FALSE,   ...)
 {
-
-  if(inherits(data, c("surv_group_by")))
+  if(inherits(data, "surv_group_by"))
     data <- data$data
   if(is.null(data)){
     if(.is_list(fit)){
@@ -131,20 +130,16 @@ surv_pvalue <- function(fit, data = NULL, method = "survdiff", test.for.trend = 
                    get_coord  =  get_coord, test.for.trend = test.for.trend ) %>%
       dplyr::select(variable, dplyr::everything())
   }
-
-  # Add fit name to the  result
-  if(.is_list(fit) ){
+  # Add fit name to the result
+  if(.is_list(fit)){
     res <- purrr::map2(res, .get_fit_names(fit),
                        function(df, rname){
-                         #df$fit.name <- rname
-                         # dplyr::select(df, fit.name, variable, dplyr::everything())
-                         dplyr::select(df,  variable, dplyr::everything())
+                         dplyr::select(df, variable, dplyr::everything())
                        })
     if(combine) res <- .rbind_data_list(res)
   }
 
-
-  return (res)
+  res
 }
 
 
@@ -155,29 +150,6 @@ surv_pvalue <- function(fit, data = NULL, method = "survdiff", test.for.trend = 
                     pval.coord = NULL,  pval.method.coord = NULL, get_coord = FALSE,
                     test.for.trend = FALSE)
 {
-
-  if(is.null(method)) method <- "survdiff"
-  if(is.null(pval)) pval <- FALSE
-  if(pval == "") pval <- FALSE
-
-  . <- NULL
-
-  allowed.methods <- c("survdiff", "log-rank", "LR", "1",
-                       "n", "Gehan-Breslow", "GB",
-                       "sqrtN", "Tarone-Ware", "TW",
-                       "S1", "Peto-Peto", "PP",
-                       "S2", "modified Peto-Peto", "mPP",
-                       "FH_p=1_q=1", "Fleming-Harrington(p=1, q=1)", "FH")
-
-  method.names <- c(rep("survdiff", 4),
-                    rep(c("n", "sqrtN", "S1", "S2", "FH_p=1_q=1"), each = 3))
-  # don't use grep which will detect many positions for "n" or "FH
-  choosed.method  <- which(tolower(allowed.methods) %in% tolower(method))
-  if(.is_empty(choosed.method))
-    stop("Don't support the choosed method: ", choosed.method, ". ",
-         "Allowed methods include: ", .collapse(allowed.methods, sep = ", "))
-  else method <- method.names[choosed.method] %>% .[1]
-
   if(test.for.trend & method == "survdiff")
     method <- "1" # use survMisc
 

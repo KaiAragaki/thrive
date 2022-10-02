@@ -7,13 +7,14 @@ surv_fit <- new_generic("surv_fit", c("formula", "data"))
 
 method(surv_fit, list(new_class("formula"), class_data.frame)) <-
   function(formula, data, group.by = NULL, ...) {
+
     if (!is.null(group.by)) {
       data <- surv_group_by(data, group.by)
       return(surv_fit(formula, data$data, ...))
     }
     fit <- survfit(formula, data)
     fit$call$formula <- formula
-    fit$call$data <- substitute(data)
+    fit$call$data <- eval(bquote(.(substitute(data))))
     fit
   }
 
@@ -25,7 +26,7 @@ method(surv_fit, list(class_list, class_data.frame)) <-
       return(surv_fit(formula, data$data, match.fd = match.fd, ...))
     }
 
-    mapply(survfit, formula = formula, data = data, ..., USE.NAMES = FALSE, SIMPLIFY = FALSE)
+    lapply(formula, surv_fit, data = data)
   }
 
 method(surv_fit, list(new_class("formula"), class_list)) <-
@@ -69,49 +70,6 @@ method(surv_fit, list(class_list, class_list)) <- function(formula, data, match.
 #     res <- purrr::map(formula, .map_each , data) %>%
 #       dplyr::combine()
 #   }
-#
-#   # List of formulas and One data set
-#   #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#   # Differents formula are applied to the same data set
-#   else if(.is_list (formula) & !.is_list (data)){
-#     res <- purrr::map(formula, .survfit1, data, ...)
-#   }
-#
-#   # Name of survfit objects list
-#   #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#   # Names are obtained by collapsing data and formula names
-#
-#   # Data names
-#   #..............................................
-#   # If users provide a named list (ex: list(colon = colon, lung = lung)), things are easy: DNAME <- names(data.list)
-#   # But, if user provide list(colon, lung), then we need to extract DNAME by using deparse() and substitute
-#   if(.is_list(data)){
-#     DNAME <- names(data)
-#     if(is.null(DNAME) & !.is_grouped_data(input_data)){
-#       DNAME <-  deparse(substitute(data)) %>%
-#         as.character() %>% gsub("list\\(|\\)", "", .) %>%
-#         strsplit(., ",\\s*", perl = TRUE) %>% unlist()
-#     }
-#   }
-#   else DNAME <- deparse(substitute(data))
-#
-#   # Formula names
-#   #..............................................
-#   FNAME <- .get_formula_names(formula)
-#
-#   if(.is_list (formula) & .is_list (data) & !match.fd){
-#     # We need to 1) repeat each formula name as many times as the length of data list
-#     # 2) repeat all data names as many times as the lentgh of formulas list ===>
-#     # All the possible combinations ordered by formula: d1::f1, d2::f1, d3::f1; d1::f2, d2::f2, ...
-#     nf <- length(formula)
-#     ndata <- length(data)
-#     FNAME <- rep(FNAME, each = ndata )
-#     DNAME <- rep(DNAME, nf)
-#   }
-#
-#
-#   if(.is_list(data) | .is_list(formula))
-#     names(res) <- .collapse(DNAME, FNAME, sep = "::")
 #
 #   res
 # }
