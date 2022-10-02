@@ -31,16 +31,18 @@ method(surv_fit, list(class_list, class_data.frame)) <-
 
 method(surv_fit, list(new_class("formula"), class_list)) <-
   function(formula, data, ...) {
-    mapply(survfit, formula = list(formula), data = data, USE.NAMES = FALSE, SIMPLIFY = FALSE)
+    lapply(data, \(x) {
+      eval(bquote(surv_fit(formula, .(x))))
+    })
   }
 
 method(surv_fit, list(class_list, class_list)) <- function(formula, data, match.fd, ...) {
   if (match.fd) {
-    return(mapply(survfit, formula = Surv, data = data, ..., USE.NAMES = FALSE, SIMPLIFY = FALSE))
+    return(mapply(surv_fit, formula = Surv, data = data, ..., USE.NAMES = FALSE, SIMPLIFY = FALSE))
   }
 
   eg <- expand.grid(formula = formula, data = data)
-  mapply(survfit, formula = eg$formula, data = eg$data, ..., USE.NAMES = FALSE, SIMPLIFY = FALSE)
+  mapply(surv_fit, formula = eg$formula, data = eg$data, ..., USE.NAMES = FALSE, SIMPLIFY = FALSE)
 }
 # surv_fit <- function(formula, data, group.by = NULL, match.fd = FALSE, ...){
 #
