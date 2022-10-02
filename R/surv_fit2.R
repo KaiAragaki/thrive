@@ -37,12 +37,18 @@ method(surv_fit, list(new_class("formula"), class_list)) <-
   }
 
 method(surv_fit, list(class_list, class_list)) <- function(formula, data, match.fd, ...) {
-  if (match.fd) {
-    return(mapply(surv_fit, formula = Surv, data = data, ..., USE.NAMES = FALSE, SIMPLIFY = FALSE))
+
+  if (!match.fd) {
+    eg <- expand.grid(formula = formula, data = data)
+    formula <- eg$formula
+    data <- eg$data
   }
 
-  eg <- expand.grid(formula = formula, data = data)
-  mapply(surv_fit, formula = eg$formula, data = eg$data, ..., USE.NAMES = FALSE, SIMPLIFY = FALSE)
+  mapply(
+    \(x, y) eval(bquote(surv_fit(.(x), .(y)))),
+    formula, data, ..., USE.NAMES = FALSE, SIMPLIFY = FALSE
+  )
+
 }
 # surv_fit <- function(formula, data, group.by = NULL, match.fd = FALSE, ...){
 #
