@@ -40,13 +40,13 @@ NULL
 #' @rdname surv_group_by
 surv_group_by <- function(data, grouping.vars){
 
-  . <- NULL # used in pipes
   if(length(grouping.vars) > 2)
     stop("grouping.vars should be of length 1 or 2.")
 
   # Grouping the data ==> list of data sets
   #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  grouped.d <- dplyr::group_by(.data = data, !!!syms(grouping.vars)) %>%
+  grouped.d <-
+    dplyr::group_by(.data = data, !!!syms(grouping.vars)) %>%
     tidyr::nest()
 
   # Ordering the grouped data by the original factor levels

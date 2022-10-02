@@ -143,43 +143,6 @@ NULL
 #' @seealso ggsurvplot(), surv_pvalue(), surv_median()
 #' @rdname surv_fit
 #' @export
-surv_fit <- new_generic("surv_fit", c("formula", "data"))
-
-method(surv_fit, list(Surv, class_data.frame)) <- function(formula,
-                                                           data,
-                                                           group.by = NULL,
-                                                           ...) {
-  if (!is.null(group.by)) {
-    data <- surv_group_by(data, group.by)
-    group.by <- NULL
-    surv_fit(formula, data, group.by, ...) # to list(Surv, class_list)
-  }
-
-  survfit(formula, data, group.by, ...)
-}
-
-method(surv_fit, list(list, class_data.frame)) <- function(formula,
-                                                           data,
-                                                           group.by = NULL,
-                                                           match.fd,
-                                                           ...) {
-  if (!is.null(group.by)) {
-    data <- surv_group_by(data, group.by)
-    group.by <- NULL
-    surv_fit(formula, data, group.by, match.fd, ...)
-  }
-
-  mapply(survfit, formula = Surv, data = data, ..., USE.NAMES = FALSE, SIMPLIFY = FALSE)
-}
-
-method(surv_fit, list(Surv, class_list)) <- function(formula, data, ...) {
-  mapply(survfit, formula = Surv, data = data, ..., USE.NAMES = FALSE, SIMPLIFY = FALSE)
-}
-
-method(surv_fit, list(class_list, class_list)) <- function(formula, data, match.fd, ...) {
-  # Depends if match.df is TRUE
-}
-
 surv_fit <- function(formula, data, group.by = NULL, match.fd = FALSE, ...){
 
   if(inherits(data, c("surv_group_by", "list")) & !is.null(group.by))
