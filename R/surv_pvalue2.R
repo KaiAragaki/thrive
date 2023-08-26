@@ -82,8 +82,17 @@ NULL
 #'
 #'@export
 #'@rdname surv_pvalue
-surv_pvalue <- function(fit, data = NULL, method = "survdiff", test.for.trend = FALSE, combine = FALSE,   ...)
-{
+surv_pvalue <- function(fit,
+                        data = NULL,
+                        method = "survdiff",
+                        test.for.trend = FALSE,
+                        combine = FALSE,
+                        ...) {
+  # Thinking of just using broom::tidy to get what data it needs from here
+  # The question: What data does it need?
+
+  # Looking at this more - I think there needs to be a separation between the
+  # calculation of the p-value and its plotting.
 
   if(inherits(data, c("surv_group_by")))
     data <- data$data
@@ -109,11 +118,6 @@ surv_pvalue <- function(fit, data = NULL, method = "survdiff", test.for.trend = 
 
 
   if(.is_list(fit) & .is_list(data)){
-
-    if(length(fit) != length(data))
-      stop("When fit and data are lists, ",
-           "they should have the same length")
-
     res <- purrr::map2(fit, data, .pvalue,
                        method = method,  pval = pval,
                        pval.coord = pval.coord,  pval.method.coord = pval.method.coord,
@@ -132,54 +136,31 @@ surv_pvalue <- function(fit, data = NULL, method = "survdiff", test.for.trend = 
       dplyr::select(variable, dplyr::everything())
   }
 
-  # Add fit name to the  result
-  if(.is_list(fit) ){
+  # Add fit name to the result
+  if(.is_list(fit)){
     res <- purrr::map2(res, .get_fit_names(fit),
                        function(df, rname){
-                         #df$fit.name <- rname
-                         # dplyr::select(df, fit.name, variable, dplyr::everything())
-                         dplyr::select(df,  variable, dplyr::everything())
+                         dplyr::select(df, variable, dplyr::everything())
                        })
     if(combine) res <- .rbind_data_list(res)
   }
-
-
-  return (res)
+  res
 }
 
 
 
 # Helper function to compute pvalue for one fit
 # Will be used for a list of fits
-.pvalue <- function(fit, data, method = "survdiff",  pval = TRUE,
-                    pval.coord = NULL,  pval.method.coord = NULL, get_coord = FALSE,
-                    test.for.trend = FALSE)
-{
+.pvalue <- function(fit,
+                    data,
+                    method = c("LR", "GB", "TW", "PP", "mPP", "FH"),
+                    pval = TRUE,
+                    pval.coord = NULL,
+                    pval.method.coord = NULL,
+                    get_coord = FALSE,
+                    test.for.trend = FALSE) {
 
-  if(is.null(method)) method <- "survdiff"
-  if(is.null(pval)) pval <- FALSE
-  if(pval == "") pval <- FALSE
-
-  . <- NULL
-
-  allowed.methods <- c("survdiff", "log-rank", "LR", "1",
-                       "n", "Gehan-Breslow", "GB",
-                       "sqrtN", "Tarone-Ware", "TW",
-                       "S1", "Peto-Peto", "PP",
-                       "S2", "modified Peto-Peto", "mPP",
-                       "FH_p=1_q=1", "Fleming-Harrington(p=1, q=1)", "FH")
-
-  method.names <- c(rep("survdiff", 4),
-                    rep(c("n", "sqrtN", "S1", "S2", "FH_p=1_q=1"), each = 3))
-  # don't use grep which will detect many positions for "n" or "FH
-  choosed.method  <- which(tolower(allowed.methods) %in% tolower(method))
-  if(.is_empty(choosed.method))
-    stop("Don't support the choosed method: ", choosed.method, ". ",
-         "Allowed methods include: ", .collapse(allowed.methods, sep = ", "))
-  else method <- method.names[choosed.method] %>% .[1]
-
-  if(test.for.trend & method == "survdiff")
-    method <- "1" # use survMisc
+  method <- rlang::arg_match(method)
 
   # Extract fit components
   fit.ext <- .extract.survfit(fit, data)
@@ -187,49 +168,23 @@ surv_pvalue <- function(fit, data = NULL, method = "survdiff", test.for.trend = 
   if(.is_empty(surv.vars)) surv.vars  <- "" # Case of null model
   data <- fit.ext$data.all
 
-  res <- list(pval = NA, method = "", pval.txt = "" )
-  # Pvalue provided by user as numeric
-  if(is.numeric(pval))
-    res <- list(pval = pval, method = "", pval.txt = paste("p =", pval) )
-  # Pvalue provided by user as text
-  else if(is.character(pval))
-    res <- list(pval = NA, method = "", pval.txt = pval)
-  # One group, NULL model ==> there are no groups to compare
-  else if(is.null(fit$strata) & pval == TRUE){
-    warning("There are no survival curves to be compared. \n This is a null model.",
-            call. = TRUE)
-  }
-  # else if pval = FALSE ===> exit
-  else if(is.logical(pval) & !pval){}
-  # Compute p-value using survdiff method
-  #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  else if(method == "survdiff") {
-    ssubset <- fit$call$subset
-    if(is.null(ssubset))
+  # Compute p-value using survdiff ---------------------------------------------
+  if (method == "LR") {
+    if(is.null(fit$call$subset))
       sdiff <- survival::survdiff(eval(fit$call$formula), data = data)
     else
       sdiff <- survival::survdiff(eval(fit$call$formula), data = data,
                                   subset = eval(fit$call$subset))
     pvalue <- stats::pchisq(sdiff$chisq, length(sdiff$n) - 1, lower.tail = FALSE)
-    pval.txt <- ifelse(pvalue < 1e-04, "p < 0.0001",
-                       paste("p =", signif(pvalue, 2)))
-    res <- list(pval = pvalue, method = "Log-rank", pval.txt = pval.txt)
+    res <- list(pval = pvalue, method = "LR")
   }
-  # Other possibilities to compute pvalue using the survMisc package
-  #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  # Compute pvalue using survMisc ----------------------------------------------
   else {
     tenfit <- ten(eval(fit$call$formula), data = data)
     capture.output(comp(tenfit)) -> null_dev
     # comp modifies tenfit object (ten class: ?survMisc::ten)
     # and adds attributes with tests
-    if(test.for.trend)
-      attributes(tenfit)$tft$tft -> tests
-    else
-    attributes(tenfit)$lrt -> tests
-
-    if(test.for.trend & is.null(tests))
-      stop("Test for trend is NULL. ",
-           "Note that, the number of groups should be > 2 to perform the test for trend. ")
+    tests <- ifelse(test.for.trend, attributes(tenfit)$tft$tft, attributes(tenfit)$lrt)
 
     lr_p <- tests$pChisq
     if(is.null(lr_p)) lr_p <- tests$pNorm
@@ -237,33 +192,70 @@ surv_pvalue <- function(fit, data = NULL, method = "survdiff", test.for.trend = 
 
     # check str(tests) -> W:weights / pNorm:p-values
     pvalue <- round(lr_p[lr_w == method], 4)
-    pval.txt <- ifelse(pvalue < 1e-04, "p < 0.0001",
-                       paste("p =", signif(pvalue, 2)))
-    test_name <- c("Log-rank", "Gehan-Breslow",
-                   "Tarone-Ware", "Peto-Peto",
-                   "modified Peto-Peto", "Fleming-Harrington (p=1, q=1)")
+    test_name <- c("LR", "GH", "TW", "PP", "mPP", "FH")
     # taken from ?survMisc::comp
     method <- test_name[lr_w == method]
     if(test.for.trend)
       method <- paste0(method, ", tft")
-    res <- list(pval = pvalue, method = method, pval.txt = pval.txt)
+    res <- list(pval = pvalue, method = method)
   }
   res$variable <- .collapse(surv.vars, sep =  "+")
-  # Pvalue coordinates to annotate the plot
-  #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  res$pval.x <- ifelse(is.null(pval.coord[1]), max(fit$time)/50, pval.coord[1])
-  res$pval.y <- ifelse(is.null(pval.coord[2]), 0.2, pval.coord[2])
-
-  res$method.x <- ifelse(is.null(pval.method.coord[1]), max(fit$time)/50, pval.method.coord[1])
-  res$method.y <- ifelse(is.null(pval.method.coord[2]), 0.3, pval.method.coord[2])
-  res <- as.data.frame(res, stringsAsFactors = FALSE)
-
-  pval.x <- pval.y <- method.x <- method.y <- NULL
-  if(!get_coord)
-    res <- res %>%
-    dplyr::select(-pval.x, -pval.y, -method.x, -method.y)
 
   res
 }
-
-
+#
+# # Validation:
+# if(length(fit) != length(data))
+#   stop("When fit and data are lists, ",
+#        "they should have the same length")
+#
+#
+# # .pvalue
+#
+# # Validation:
+# if(is.null(method)) method <- "survdiff"
+# if(is.null(pval)) pval <- FALSE
+# if(pval == "") pval <- FALSE
+# if(.is_empty(choosed.method))
+#   stop("Don't support the choosed method: ", choosed.method, ". ",
+#        "Allowed methods include: ", .collapse(allowed.methods, sep = ", "))
+#
+# if(test.for.trend & is.null(tests))
+#   stop("Test for trend is NULL. ",
+#        "Note that, the number of groups should be > 2 to perform the test for trend. ")
+#
+# # Gotta be a better way to do this
+# # else if pval = FALSE ===> exit
+# else if(is.logical(pval) & !pval){}
+#
+# # Likewise with below:
+# # Pvalue provided by user as numeric
+# if(is.numeric(pval))
+#   res <- list(pval = pval, method = "", pval.txt = paste("p =", pval) )
+# # Pvalue provided by user as text
+# else if(is.character(pval))
+#   res <- list(pval = NA, method = "", pval.txt = pval)
+# # One group, NULL model ==> there are no groups to compare
+# else if(is.null(fit$strata) & pval == TRUE){
+#   warning("There are no survival curves to be compared. \n This is a null model.",
+#           call. = TRUE)
+# }
+# # Formatting should happen elsewhere
+# pval.txt <- ifelse(pvalue < 1e-04, "p < 0.0001",
+#                    paste("p =", signif(pvalue, 2)))
+#
+#
+#
+# # Was in .pvalue - move somewhere else!
+# # p-value coordinates to annotate the plot -----------------------------------
+# res$pval.x <- ifelse(is.null(pval.coord[1]), max(fit$time)/50, pval.coord[1])
+# res$pval.y <- ifelse(is.null(pval.coord[2]), 0.2, pval.coord[2])
+#
+# res$method.x <- ifelse(is.null(pval.method.coord[1]), max(fit$time)/50, pval.method.coord[1])
+# res$method.y <- ifelse(is.null(pval.method.coord[2]), 0.3, pval.method.coord[2])
+# res <- as.data.frame(res, stringsAsFactors = FALSE)
+#
+# pval.x <- pval.y <- method.x <- method.y <- NULL
+# if(!get_coord)
+#   res <- res %>%
+#   dplyr::select(-pval.x, -pval.y, -method.x, -method.y)

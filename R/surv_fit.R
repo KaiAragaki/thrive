@@ -74,17 +74,14 @@ NULL
 #' library(survival)
 #' library(magrittr)
 #'
-#'# Case 1: One formula and One data set
-#'#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#'# One formula, one data set ---------------
 #'fit <- surv_fit(Surv(time, status) ~ sex,
 #'                data = colon)
 #'surv_pvalue(fit)
 #'
 #'
-#'# Case 2: List of formulas and One data set.
-#'#   - Different formulas are applied to the same data set
-#'#   - Returns a (named) list of survfit objects
-#'#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#'# List of formulas, one data set ----------
+#'
 #'# Create a named list of formulas
 #'formulas <- list(
 #'  sex = Surv(time, status) ~ sex,
@@ -95,17 +92,13 @@ NULL
 #'fit <- surv_fit(formulas, data = colon)
 #'surv_pvalue(fit)
 #'
-#'# Case 3: One formula and List of data sets
-#'#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#'# One formula, list of data sets ----------
 #'fit <- surv_fit(Surv(time, status) ~ sex,
 #'                data = list(colon, lung))
 #'surv_pvalue(fit)
 #'
 #'
-#'# Case 4: List of formulas and List of data sets
-#'#  - Each formula is applied to each of the data in the data list
-#'#  - argument: match.fd = FALSE
-#'#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#'# List of formulas, list of data sets -----
 #'
 #'# Create two data sets
 #'set.seed(123)
@@ -126,10 +119,7 @@ NULL
 #'surv_pvalue(fit)
 #'
 #'
-#'# Grouped survfit
-#'#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#'# - Group by the treatment "rx" and fit survival curves on each subset
-#'# - Returns a list of survfit objects
+#'# Grouped survfit -------------------------
 #'fit <- surv_fit(Surv(time, status) ~ sex,
 #'                data = colon, group.by = "rx")
 #'
